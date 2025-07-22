@@ -7,13 +7,12 @@ from os.path import abspath
 import torch
 from rich import print
 
-from Models.models.tokenizer import JsonTokenizer
+from Models.models.tokenizer import TikTokenizer
 from Models.models.gpt import GPTModel
-from config import TEST_GPT_NETWORK_CONFIG
+from config import GPT2_124M_CONFIG
 
 
 MAX_TEXT_LENGTH = 50
-TOKENIZER_PATH = abspath("../data/models/tokenizer/Chinese-LLaMA.json")
 if torch.cuda.is_available():
     DEVICE = torch.device("cuda")
     print("Running on GPU")
@@ -23,10 +22,12 @@ else:
 
 
 def main():
-    tokenizer = JsonTokenizer(TOKENIZER_PATH)
-    model = GPTModel(tokenizer, TEST_GPT_NETWORK_CONFIG, DEVICE)
-    print("这是一个示例程序。程序实例化了一个GPT网络。你可以在接下来的测试中向模型输入文本，它会尝试自动补全这个文本。\n"
-          "由于这个网络没有进行任何训练，因此它的回答一定是混乱的。\n"
+    tokenizer = TikTokenizer("gpt2")
+    model = GPTModel(tokenizer, GPT2_124M_CONFIG, DEVICE)
+    model.load(abspath("../data/models/pretrained/gpt2-124M.pth"))
+    print("这是一个示例程序。程序实例化了一个GPT网络，并加载了GPT2-124M模型权重。\n"
+          "你可以在接下来的测试中向模型输入文本，它会尝试自动补全这个文本。\n"
+          "由于没有经过指令微调，请不要对模型的回答抱有期许。\n"
           "输入 EXIT 以退出程序。")
     while True:
         text = input("提示文本：")

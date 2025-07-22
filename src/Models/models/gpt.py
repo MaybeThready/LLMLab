@@ -18,7 +18,14 @@ class GPTModel:
     ):
         self.tokenizer = tokenizer
         self.network_config = network_config
-        self.network_config.vocab_size = len(tokenizer)
+
+        if self.network_config.vocab_size != -1:
+            assert self.network_config.vocab_size == len(tokenizer),\
+                (f"Vocab size of tokenizer (got {len(tokenizer)})"
+                 f" must equal to the config (got {self.network_config.vocab_size})")
+        else:
+            self.network_config.vocab_size = len(tokenizer)
+
         self.network = GPTNetwork(network_config).to(device)
         self.device = device
 
@@ -30,7 +37,7 @@ class GPTModel:
             top_k: int = None,
     ) -> torch.Tensor:
         """
-        通过张量生成文本
+        通过张量生成文本ID
         :param batch_input_ids: 批量文本ID
         :param max_text_length: 生成文本的最大长度
         :param temperature: 温度。越小越自信，越大越多样

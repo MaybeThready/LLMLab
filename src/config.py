@@ -13,3 +13,14 @@ TEST_GPT_NETWORK_CONFIG = GPTNetworkConfig(
     drop_rate=0.1,
     qkv_bias=False,
 )
+
+
+GPT2_124M_CONFIG = GPTNetworkConfig(
+    context_length=1024,
+    embedding_dim=768,
+    num_heads=12,
+    num_layers=12,
+    drop_rate=0.1,
+    qkv_bias=True,
+    vocab_size=50257
+)

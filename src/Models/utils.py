@@ -5,6 +5,8 @@
 import random
 from typing import Any
 
+import torch
+
 NUM_TYPE = int | float
 
 
@@ -45,3 +47,15 @@ def calculate_network_size(network, unit="mb") -> float:
         case "billion":
             return total_params / 10_000_000_000
     return total_size_bytes / k
+
+
+def assign(left, right):
+    """
+    比对两个张量的形状，如果不同则抛出异常，相同就返回右值
+    :param left:
+    :param right:
+    :return:
+    """
+    if left.shape != right.shape:
+        raise ValueError(f"Shape mismatch. Left: {left.shape}, Right: {right.shape}")
+    return torch.nn.Parameter(torch.tensor(right))

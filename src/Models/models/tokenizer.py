@@ -4,6 +4,7 @@
 
 from abc import ABC, abstractmethod
 from tokenizers import Tokenizer as _ThirdTokenizer
+import tiktoken
 
 
 class Tokenizer(ABC):
@@ -94,3 +95,33 @@ class JsonTokenizer(Tokenizer):
 
     def eos_id(self) -> int:
         return self._EOS_id
+
+
+class TikTokenizer(Tokenizer):
+    def __init__(self, model_name: str):
+        self.tokenizer = tiktoken.get_encoding(model_name)
+
+    def encode(self, text: str) -> list[int]:
+        return self.tokenizer.encode(text)
+
+    def decode(self, ids: list[int]) -> str:
+        return self.tokenizer.decode(ids)
+
+    def split(self, text: str) -> list[str]:
+        result = []
+        ids = self.tokenizer.encode(text)
+        for i in ids:
+            result.append(self.tokenizer.decode([i]))
+        return result
+
+    def look_up(self, token_id: int) -> str:
+        return self.tokenizer.decode([token_id])
+
+    def __len__(self):
+        return self.tokenizer.n_vocab
+
+    def eos_token(self) -> str:
+        return self.look_up(self.tokenizer.eot_token)
+
+    def eos_id(self) -> int:
+        return self.tokenizer.eot_token
