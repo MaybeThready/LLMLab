@@ -65,11 +65,15 @@ class Tokenizer(ABC):
 
 
 class JsonTokenizer(Tokenizer):
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, eos_id=-1):
         self.tokenizer = _ThirdTokenizer.from_file(file_path)
-        self._EOS_token = "<|end_of_sentence|>"
-        self.tokenizer.add_special_tokens([self._EOS_token])
-        self._EOS_id = self.tokenizer.get_vocab()[self._EOS_token]
+        if eos_id == -1:  # 自动推导eos
+            self._EOS_token = "<|end_of_sentence|>"
+            self.tokenizer.add_special_tokens([self._EOS_token])
+            self._EOS_id = self.tokenizer.get_vocab()[self._EOS_token]
+        else:  # 指定eos
+            self._EOS_id = eos_id
+            self._EOS_token = self.tokenizer.decode([eos_id], skip_special_tokens=False)
 
     def encode(self, text: str) -> list[int]:
         return self.tokenizer.encode(text).ids
@@ -90,9 +94,11 @@ class JsonTokenizer(Tokenizer):
     def __len__(self):
         return self.tokenizer.get_vocab_size()
 
+    @property
     def eos_token(self) -> str:
         return self._EOS_token
 
+    @property
     def eos_id(self) -> int:
         return self._EOS_id
 
@@ -120,8 +126,10 @@ class TikTokenizer(Tokenizer):
     def __len__(self):
         return self.tokenizer.n_vocab
 
+    @property
     def eos_token(self) -> str:
         return self.look_up(self.tokenizer.eot_token)
 
+    @property
     def eos_id(self) -> int:
         return self.tokenizer.eot_token

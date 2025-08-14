@@ -5,28 +5,34 @@
 import torch
 
 from .tokenizer import Tokenizer
-from ..networks import GPTNetwork
-from ..config import GPTNetworkConfig
+from ..networks import GPTNetwork, QwenNetwork
+from ..config import GPTNetworkConfig, QwenNetworkConfig
 
 
-class GPTModel:
+class PretrainedModel:
     def __init__(
             self,
             tokenizer: Tokenizer,
-            network_config: GPTNetworkConfig,
+            network_config,
             device: torch.device = torch.device("cpu")
     ):
         self.tokenizer = tokenizer
         self.network_config = network_config
 
         if self.network_config.vocab_size != -1:
-            assert self.network_config.vocab_size == len(tokenizer),\
-                (f"Vocab size of tokenizer (got {len(tokenizer)})"
-                 f" must equal to the config (got {self.network_config.vocab_size})")
+            pass
+            # assert self.network_config.vocab_size == len(tokenizer),\
+            #     (f"Vocab size of tokenizer (got {len(tokenizer)})"
+            #      f" must equal to the config (got {self.network_config.vocab_size})")
         else:
             self.network_config.vocab_size = len(tokenizer)
 
-        self.network = GPTNetwork(network_config).to(device)
+        if isinstance(self.network_config, GPTNetworkConfig):
+            self.network = GPTNetwork(network_config).to(device)
+        elif isinstance(self.network_config, QwenNetworkConfig):
+            self.network = QwenNetwork(network_config).to(device)
+        else:
+            raise ValueError("Unrecognized config.")
         self.device = device
 
     def generate_from_tensor(

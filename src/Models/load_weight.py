@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-# 从OpenAI下载gpt权重数据，并转换为pytorch权重数据
+# 将模型权重转换为pytorch权重数据
 
 import os
 import urllib.request
@@ -9,12 +9,13 @@ import json
 import numpy as np
 import tensorflow as tf
 import torch
+from safetensors import safe_open
 from rich import print
 from rich.rule import Rule
 from rich.progress import Progress
 
-from .config import GPTNetworkConfig
-from .networks import GPTNetwork
+from .config import GPTNetworkConfig, QwenNetworkConfig
+from .networks import GPTNetwork, QwenNetwork
 from .utils import assign
 
 
@@ -205,4 +206,68 @@ def transform_gpt2_params_to_torch(src: str, fdst: str, config: GPTNetworkConfig
     gpt.out_head.weight = assign(gpt.out_head.weight, params["wte"])
 
     torch.save(gpt.state_dict(), fdst)
+    print("Successfully transform weights!")
+
+
+def transform_qwen2p5_params_to_torch(fsrc: str, fdst: str, config: QwenNetworkConfig):
+    """
+    将safetensors权重转化为pytorch权重
+    :param fsrc: safetensors权重文件路径
+    :param fdst: pytorch权重文件路径
+    :param config:
+    :return:
+    """
+    params = {}
+    with safe_open(fsrc, framework="pt", device="cpu") as f:
+        for k in f.keys():
+            params[k] = f.get_tensor(k)
+    qwen: QwenNetwork = QwenNetwork(config)
+    qwen.tok_emb.weight = assign(qwen.tok_emb.weight, params["model.embed_tokens.weight"])
+    for layer in range(config.num_layers):
+        layer_name = f"model.layers.{layer}."
+        qwen.transformers[layer].norm1.weight = assign(
+            qwen.transformers[layer].norm1.weight, params[layer_name + "input_layernorm.weight"]
+        )
+
+        qwen.transformers[layer].feedforward.W_down.weight = assign(
+            qwen.transformers[layer].feedforward.W_down.weight, params[layer_name + "mlp.down_proj.weight"]
+        )
+        qwen.transformers[layer].feedforward.W_gate.weight = assign(
+            qwen.transformers[layer].feedforward.W_gate.weight, params[layer_name + "mlp.gate_proj.weight"]
+        )
+        qwen.transformers[layer].feedforward.W_up.weight = assign(
+            qwen.transformers[layer].feedforward.W_up.weight, params[layer_name + "mlp.up_proj.weight"]
+        )
+
+        qwen.transformers[layer].norm2.weight = assign(
+            qwen.transformers[layer].norm2.weight, params[layer_name + "post_attention_layernorm.weight"]
+        )
+
+        qwen.transformers[layer].attention.W_key.weight = assign(
+            qwen.transformers[layer].attention.W_key.weight, params[layer_name + "self_attn.k_proj.weight"]
+        )
+        qwen.transformers[layer].attention.W_key.bias = assign(
+            qwen.transformers[layer].attention.W_key.bias, params[layer_name + "self_attn.k_proj.bias"]
+        )
+        qwen.transformers[layer].attention.W_query.weight = assign(
+            qwen.transformers[layer].attention.W_query.weight, params[layer_name + "self_attn.q_proj.weight"]
+        )
+        qwen.transformers[layer].attention.W_query.bias = assign(
+            qwen.transformers[layer].attention.W_query.bias, params[layer_name + "self_attn.q_proj.bias"]
+        )
+        qwen.transformers[layer].attention.W_value.weight = assign(
+            qwen.transformers[layer].attention.W_value.weight, params[layer_name + "self_attn.v_proj.weight"]
+        )
+        qwen.transformers[layer].attention.W_value.bias = assign(
+            qwen.transformers[layer].attention.W_value.bias, params[layer_name + "self_attn.v_proj.bias"]
+        )
+        qwen.transformers[layer].attention.out_proj.weight = assign(
+            qwen.transformers[layer].attention.out_proj.weight, params[layer_name + "self_attn.o_proj.weight"]
+        )
+
+    qwen.final_norm.weight = assign(
+        qwen.final_norm.weight, params["model.norm.weight"]
+    )
+
+    torch.save(qwen.state_dict(), fdst)
     print("Successfully transform weights!")

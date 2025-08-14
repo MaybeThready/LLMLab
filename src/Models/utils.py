@@ -3,9 +3,13 @@
 # 在这里写入一些你觉得十分实用的小函数
 
 import random
+import os
 from typing import Any
 
 import torch
+from safetensors import safe_open
+from rich import print
+from rich.rule import Rule
 
 NUM_TYPE = int | float
 
@@ -58,4 +62,21 @@ def assign(left, right):
     """
     if left.shape != right.shape:
         raise ValueError(f"Shape mismatch. Left: {left.shape}, Right: {right.shape}")
+    if isinstance(right, torch.Tensor):
+        return torch.nn.Parameter(right)
     return torch.nn.Parameter(torch.tensor(right))
+
+
+def view_safetensors(fp):
+    """
+    safetensors是huggingface的一种存储网络权重的数据结构，这个函数是用于观察它的
+    """
+    state_dict = {}
+    with safe_open(fp, framework="pt", device="cpu") as f:
+        for k in f.keys():
+            state_dict[k] = f.get_tensor(k)
+
+    print(Rule(f"Viewing Safetensors {os.path.basename(fp)}"))
+    for key, value in state_dict.items():
+        print(f'{key}: {value.shape}')
+    print(Rule(f"End Viewing"))

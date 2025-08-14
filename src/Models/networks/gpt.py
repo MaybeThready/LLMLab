@@ -1,12 +1,11 @@
 # -*- coding: UTF-8 -*-
 
-# 在这里定义一些构建复杂模型可能会用到的基本网络模型/层
+# 在这里定义GPT网络
 
 import torch
 from torch import nn
-from torch.utils.checkpoint import checkpoint
 
-from .config import GPTNetworkConfig
+from ..config import GPTNetworkConfig
 
 
 class MultiHeadAttention(nn.Module):

@@ -6,29 +6,34 @@ LLMLab是一个用于应付《人工智能导论》课程期末论文的实验�
 开发一个类似于Chatbot的应用程序。也可以更近一步，开发机器客服、数字分身等应用。
 
 ### 1.2 项目结构
-截至8月8日，LLMLab的项目结构大致如下：
+截至8月14日，LLMLab的项目结构大致如下：
 ```
 LLMLab
 | data                          # 数据文件夹
     | models                    # 模型文件夹
         | pretrained            # 预训练模型
             | openai            # openai类预训练模型
-                | gpt2-124M     # gpt2-124M原始参数
+            | qwen              # qwen类预训练模型
             gpt2-124M.pth       # gpt2-124M pytorch参数
+            qwen2p5-1p5B.pth    # qwen2p5-1p5B pytorch参数
         | tokenizer             # 分词器json文件
             Chinese-LLaMA.json
             DeepSeek.json
             T5_Pegasus.json
+            qwen2p5-1p5B.json
 | src                           # 源代码文件夹
     | Applications              # 应用包
     | Models                    # 模型包
         | models                # 模型模块
             __init__.py
-            gpt.py              # gpt模型
+            pretrained.py       # 预训练模型
             tokenizer.py        # 分词器模型
+        | networks              # 网络模块
+            __init__.py
+            gpt.py
+            qwen.py
         config.py               # 模型/网络配置接口
-        networks.py             # 基础网络模块
-        openai_gpt.py           # openai权重加载模块
+        load_weight.py          # 权重加载模块
         utils.py                # 实用工具
     config.py                   # 模型/网络配置
     main.py                     # 主程序入口
@@ -57,15 +62,15 @@ requirements.txt
 
 子包models负责以类的形式开发各种模型，比如gpt模型、tokenizer模型等。
 
-可能会增加子包dataset，负责数据集处理。
+子包networks定义的是具体的神经网络。
 
-模块networks定义的是神经网络的基本单元，比如Self-Attention等。
+可能会增加子包dataset，负责数据集处理。
 
 模块utils是在开发Models包时可能会用到的一些实用函数。
 
 模块config负责以类的形式管理模型的各种参数。该类会在外层config文件中得到实例化。
 
-模块openai_gpt负责处理openai预训练模型参数。
+模块load_weight负责处理预训练模型权重。
 
 #### 1.2.4 程序入口
 config模块负责实例化模型的config类。
