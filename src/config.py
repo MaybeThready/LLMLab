@@ -2,7 +2,8 @@
 
 # 在这里实例化配置类型，或写入一些常数
 
-from Models.config import GPTNetworkConfig, QwenNetworkConfig
+from Models.config import GPTNetworkConfig, QwenNetworkConfig, PreferenceTrainerConfig
+from os.path import abspath
 
 
 TEST_GPT_NETWORK_CONFIG = GPTNetworkConfig(
@@ -39,3 +40,12 @@ QWEN2P5_1P5B_CONFIG = QwenNetworkConfig(
 )
 
 QWEN2P5_1P5B_TOKENIZER_EOS_ID = 151643
+
+TEST_PREFERENCE_CONFIG = PreferenceTrainerConfig(
+    beta=0.1,
+    log_dir=abspath("../data/models/preference/test/logs/"),
+    save_fpath=abspath("../data/models/preference/test/test.pth"),
+    epochs=5,
+    eval_freq=10,
+    lr=5e-6
+)

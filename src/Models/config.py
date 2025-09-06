@@ -29,3 +29,13 @@ class QwenNetworkConfig:
     drop_rate: float                            # dropout率
     qkv_bias: bool = False                      # 是否启用qkv偏置
     vocab_size: int = -1                        # 词表大小。这个值通常不用用户自己指定，内置模块会自动配置
+
+
+@dataclass
+class PreferenceTrainerConfig:
+    beta: float
+    log_dir: str
+    save_fpath: str
+    epochs: int
+    eval_freq: int
+    lr: float
