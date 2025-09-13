@@ -80,3 +80,38 @@ def view_safetensors(fp):
     for key, value in state_dict.items():
         print(f'{key}: {value.shape}')
     print(Rule(f"End Viewing"))
+
+
+def create_prompt(instruction="", input_text="", output_text="", template="default"):
+    """
+    构建统一的 prompt 模板
+    """
+    if template == "default":
+        if instruction:
+            instruction = f"指令: {instruction}"
+        if input_text:
+            input_text = f"\n输入: {input_text}"
+        if output_text:
+            output_text = f"\n回答: {output_text}"
+        return instruction + input_text + output_text
+
+    elif template == "alpaca":
+        if instruction:
+            instruction = f"Below is an instruction with input. Write a response.\n### Instruction:\n{instruction}"
+        if input_text:
+            input_text = f"\n### Input:\n{input_text}"
+        if output_text:
+            output_text = f"\n### Response:\n{output_text}"
+        return instruction + input_text + output_text
+
+    elif template == "chatml":
+        if instruction:
+            instruction = f"<|user|>\n{instruction}"
+        if input_text:
+            input_text = f"\n{input_text}"
+        if output_text:
+            output_text = f"\n<|assistant|>\n{output_text}"
+        return instruction + input_text + output_text
+
+    else:
+        raise ValueError(f"Unknown template: {template}")

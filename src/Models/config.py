@@ -29,3 +29,14 @@ class QwenNetworkConfig:
     drop_rate: float                            # dropout率
     qkv_bias: bool = False                      # 是否启用qkv偏置
     vocab_size: int = -1                        # 词表大小。这个值通常不用用户自己指定，内置模块会自动配置
+
+
+@dataclass
+class InstructTrainerConfig:
+    max_learning_rate: float                    # 最大学习率
+    min_learning_rate: float                    # 最小学习率
+    warmup_rate: float                          # 预热占比
+    epochs: int                                 # 目标epoch数
+    eval_freq: int                              # 验证间隔
+    model_save_fpath: str= ""                   # 模型保存位置
+    log_dir: str = ""                           # 日志目录
