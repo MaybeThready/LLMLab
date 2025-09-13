@@ -61,8 +61,8 @@ def main():
     # Step 3 创建指令微调模型
     instruct_model = InstructModel(
         pretrained_model=pretrained_model,
-        rank=4,
-        alpha=4,
+        rank=RANK,
+        alpha=ALPHA,
         template=INSTRUCT_TRAINER_V1_CONFIG.prompt_template,
         module_names=LORA_MODULE
     )
