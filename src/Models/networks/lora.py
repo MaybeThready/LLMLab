@@ -25,19 +25,24 @@ class LinearWithLoRA(torch.nn.Module):
     def forward(self, x):
         return self.linear(x) + self.lora(x)
 
-
-def replace_linear_with_lora(network, rank, alpha, device, module_names=None):
+counts = 0
+def replace_linear_with_lora(network, rank, alpha, device, module_names=None, tag=-1):
+    global counts
+    if tag == -1:
+        counts = 0
     for name, module in network.named_children():
         if module_names is None:
             if isinstance(module, torch.nn.Linear):
                 setattr(network, name, LinearWithLoRA(module, rank, alpha))
+                counts += 1
             else:
-                replace_linear_with_lora(module, rank, alpha, device)
+                replace_linear_with_lora(module, rank, alpha, device, tag=0)
         else:
             if name in module_names:
-                print(name)
                 setattr(network, name, LinearWithLoRA(module, rank, alpha))
+                counts += 1
             else:
-                replace_linear_with_lora(module, rank, alpha, device, module_names)
+                replace_linear_with_lora(module, rank, alpha, device, module_names, tag=0)
     network.to(device)
+    return counts
 

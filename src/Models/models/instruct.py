@@ -5,6 +5,7 @@ from ..networks.lora import replace_linear_with_lora
 from ..config import InstructTrainerConfig
 from ..utils import create_prompt
 import torch
+import os
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from rich import print
@@ -19,7 +20,8 @@ class InstructModel:
         self.template = template
         for param in self.network.parameters():
             param.requires_grad = False
-        replace_linear_with_lora(self.network, rank=rank, alpha=alpha, device=self.device, module_names=module_names)
+        counts = replace_linear_with_lora(self.network, rank=rank, alpha=alpha, device=self.device, module_names=module_names)
+        print(f"{counts} modules have been replaced by LoRA layers.")
 
     def generate_from_tensor(
             self,
@@ -70,7 +72,7 @@ class InstructTrainer:
         total_steps = self.config.epochs * len(self.train_loader)
         warmup_steps = int(self.config.warmup_rate * total_steps)
         cosine_steps = total_steps - warmup_steps
-        # print(total_steps, warmup_steps, cosine_steps)
+
         warmup_scheduler = torch.optim.lr_scheduler.LinearLR(
             self.optimizer,
             start_factor=self.config.min_learning_rate / self.config.max_learning_rate,
@@ -110,7 +112,16 @@ class InstructTrainer:
 
     def train(self, test_text: str="", max_output_tokens: int=50):
         print(Rule("Start Training"))
+        total_steps = self.config.epochs * len(self.train_loader)
         step = -1
+
+        log_list = os.listdir(self.config.log_dir)
+        for name in log_list:
+            fp = os.path.join(self.config.log_dir, name)
+            if os.path.isfile(fp):
+                os.remove(fp)
+
+        ave_loss_list = []
 
         with SummaryWriter(self.config.log_dir) as writer:
             for epoch in range(self.config.epochs):
@@ -119,7 +130,7 @@ class InstructTrainer:
                     self.optimizer.zero_grad()
                     step += 1
                     loss = self.loss_from_batch(input_batch, target_batch)
-                    writer.add_scalar("Loss/Train", loss.item(), step)
+                    ave_loss_list.append(loss.item())
                     loss.backward()
                     self.optimizer.step()
 
@@ -127,13 +138,21 @@ class InstructTrainer:
                     self.scheduler.step()
 
                     if step % self.config.eval_freq == 0:
-                        loss = self.eval()
-                        writer.add_scalar("Loss/Val", loss, step)
-                        print(f"Epoch {epoch+1}, Step {step}, val_loss is {loss:.3f}")
+                        val_loss = self.eval()
+                        train_loss = sum(ave_loss_list) / len(ave_loss_list)
+                        writer.add_scalars("Loss", {
+                            "Train": train_loss,
+                            "Val": val_loss
+                        }, step)
+                        ave_loss_list = []
+                        print(f"Epoch {epoch+1} / {self.config.epochs}, Step {step} / {total_steps}, train_loss is {train_loss:.3f}, val_loss is {val_loss:.3f}")
 
                 print(f"Epoch {epoch+1} end, generate text:")
                 print(self.model.generate_from_text(test_text, max_output_tokens))
 
-        self.model.save(self.config.model_save_fpath)
+                self.model.save(
+                    os.path.join(self.config.model_save_path, self.config.model_save_name + f"-epoch{epoch+1}.pth")
+                )
+                print("Successfully save model!")
 
 

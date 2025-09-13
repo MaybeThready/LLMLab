@@ -68,37 +68,41 @@ class CollateFuntion:
         return inputs_tensor, targets_tensor
 
 
-def create_dataloader(path: str,
-                      train_batch_size: int,
-                      val_batch_size: int,
-                      tokenizer: Tokenizer,
-                      template: str="alpaca",
-                      pad_token_id: int=None,
-                      ignore_index=-100,
-                      max_length: int=None,
-                      device: torch.device=torch.device("cpu"),
-                      train_rate: float = 0.8
-                      ):
+def create_dataloader(
+        path: str,
+        train_batch_size: int,
+        val_batch_size: int,
+        tokenizer: Tokenizer,
+        template: str="alpaca",
+        pad_token_id: int=None,
+        ignore_index=-100,
+        max_length: int=None,
+        device: torch.device=torch.device("cpu"),
+        val_size: int=1
+    ):
     dataset = InstructDataset(path, tokenizer, template)
     size = len(dataset)
     indices = list(range(size))
-    split_index = int(train_rate * size)
-    train_indices, val_indices = indices[:split_index], indices[split_index:]
+    val_indices, train_indices = indices[:val_size], indices[val_size:]
     train_sampler = SubsetRandomSampler(train_indices)
     val_sampler = SubsetRandomSampler(val_indices)
     pad_token_id = tokenizer.eos_id if pad_token_id is None else pad_token_id
     collate_fn = CollateFuntion(pad_token_id, ignore_index, max_length, device)
 
-    train_loader = DataLoader(dataset,
-                              train_batch_size,
-                              sampler=train_sampler,
-                              collate_fn=collate_fn
-                              )
-    val_loader = DataLoader(dataset,
-                            val_batch_size,
-                            sampler=val_sampler,
-                            collate_fn=collate_fn,
-                            drop_last=True)
+    train_loader = DataLoader(
+        dataset,
+        train_batch_size,
+        sampler=train_sampler,
+        collate_fn=collate_fn,
+        drop_last=True
+    )
+    val_loader = DataLoader(
+        dataset,
+        val_batch_size,
+        sampler=val_sampler,
+        collate_fn=collate_fn,
+        drop_last=True
+    )
 
     return train_loader, val_loader
 

@@ -38,5 +38,7 @@ class InstructTrainerConfig:
     warmup_rate: float                          # 预热占比
     epochs: int                                 # 目标epoch数
     eval_freq: int                              # 验证间隔
-    model_save_fpath: str= ""                   # 模型保存位置
+    model_save_path: str= ""                    # 模型保存位置
+    model_save_name: str= "inst-model"          # 模型保存名称
     log_dir: str = ""                           # 日志目录
+    prompt_template: str = "alpaca"             # 提示词模板

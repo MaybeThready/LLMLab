@@ -41,12 +41,14 @@ QWEN2P5_1P5B_CONFIG = QwenNetworkConfig(
 
 QWEN2P5_1P5B_TOKENIZER_EOS_ID = 151643
 
-TEST_INSTRUCT_CONFIG = InstructTrainerConfig(
+INSTRUCT_TRAINER_V1_CONFIG = InstructTrainerConfig(
     max_learning_rate=2e-4,
     min_learning_rate=1e-10,
     warmup_rate=0.01,
     epochs=3,
     eval_freq=50,
-    model_save_fpath=abspath("../data/models/instruct/test.pth"),
-    log_dir=abspath("../data/models/instruct/log/")
+    model_save_path=abspath("../data/models/instruct/v1/"),
+    model_save_name="inst-model-v1",
+    log_dir=abspath("../data/models/instruct/v1/log/"),
+    prompt_template="alpaca"
 )
