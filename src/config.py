@@ -4,6 +4,8 @@
 
 from Models.config import GPTNetworkConfig, QwenNetworkConfig, InstructTrainerConfig
 from os.path import abspath
+from Models.config import GPTNetworkConfig, QwenNetworkConfig, PreferenceTrainerConfig
+from os.path import abspath
 
 
 TEST_GPT_NETWORK_CONFIG = GPTNetworkConfig(
@@ -51,4 +53,13 @@ INSTRUCT_TRAINER_V1_CONFIG = InstructTrainerConfig(
     model_save_name="inst-model-v1",
     log_dir=abspath("../data/models/instruct/v1/log/"),
     prompt_template="alpaca"
+)
+
+TEST_PREFERENCE_CONFIG = PreferenceTrainerConfig(
+    beta=0.1,
+    log_dir=abspath("../data/models/preference/test/logs/"),
+    save_fpath=abspath("../data/models/preference/test/test.pth"),
+    epochs=5,
+    eval_freq=10,
+    lr=5e-6
 )
