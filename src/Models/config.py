@@ -48,7 +48,9 @@ class InstructTrainerConfig:
 class PreferenceTrainerConfig:
     beta: float
     log_dir: str
-    save_fpath: str
     epochs: int
     eval_freq: int
     lr: float
+    model_save_path: str=""
+    model_save_name: str="preference-model"
+    prompt_template: str = "alpaca"

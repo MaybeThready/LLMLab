@@ -1,10 +1,7 @@
 # -*- coding: UTF-8 -*-
-
 # 在这里实例化配置类型，或写入一些常数
 
-from Models.config import GPTNetworkConfig, QwenNetworkConfig, InstructTrainerConfig
-from os.path import abspath
-from Models.config import GPTNetworkConfig, QwenNetworkConfig, PreferenceTrainerConfig
+from Models.config import GPTNetworkConfig, QwenNetworkConfig, InstructTrainerConfig, PreferenceTrainerConfig
 from os.path import abspath
 
 
@@ -16,7 +13,6 @@ TEST_GPT_NETWORK_CONFIG = GPTNetworkConfig(
     drop_rate=0.1,
     qkv_bias=False,
 )
-
 
 GPT2_124M_CONFIG = GPTNetworkConfig(
     context_length=1024,
@@ -55,11 +51,35 @@ INSTRUCT_TRAINER_V1_CONFIG = InstructTrainerConfig(
     prompt_template="alpaca"
 )
 
-TEST_PREFERENCE_CONFIG = PreferenceTrainerConfig(
+PREFERENCE_V1_CONFIG = PreferenceTrainerConfig(
     beta=0.1,
-    log_dir=abspath("../data/models/preference/test/logs/"),
-    save_fpath=abspath("../data/models/preference/test/test.pth"),
-    epochs=5,
-    eval_freq=10,
-    lr=5e-6
+    log_dir=abspath("../data/models/preference/v1/log/"),
+    epochs=1,
+    eval_freq=50,
+    lr=1e-5,
+    model_save_path=abspath("../data/models/preference/v1/"),
+    model_save_name="preference-model-v1",
+    prompt_template="alpaca"
+)
+
+PREFERENCE_V2_CONFIG = PreferenceTrainerConfig(
+    beta=0.1,
+    log_dir=abspath("../data/models/preference/v2/log/"),
+    epochs=1,
+    eval_freq=50,
+    lr=1e-5,
+    model_save_path=abspath("../data/models/preference/v2/"),
+    model_save_name="preference-model-v2",
+    prompt_template="alpaca"
+)
+
+PREFERENCE_V3_CONFIG = PreferenceTrainerConfig(
+    beta=0.1,
+    log_dir=abspath("../data/models/preference/v3/log/"),
+    epochs=1,
+    eval_freq=50,
+    lr=1e-5,
+    model_save_path=abspath("../data/models/preference/v3/"),
+    model_save_name="preference-model-v3",
+    prompt_template="alpaca"
 )

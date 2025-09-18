@@ -5,3 +5,4 @@
 from .pretrained import PretrainedModel
 from .tokenizer import Tokenizer, JsonTokenizer, TikTokenizer
 from .instruct import InstructModel, InstructTrainer
+from .preference import PreferenceModel, PreferenceTrainer

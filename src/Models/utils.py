@@ -82,7 +82,7 @@ def view_safetensors(fp):
     print(Rule(f"End Viewing"))
 
 
-def create_prompt(instruction="", input_text="", output_text="", template="default"):
+def create_prompt(instruction="", input_text="", output_text="", template="default", need_out=False):
     """
     构建统一的 prompt 模板
     """
@@ -91,7 +91,7 @@ def create_prompt(instruction="", input_text="", output_text="", template="defau
             instruction = f"指令: {instruction}"
         if input_text:
             input_text = f"\n输入: {input_text}"
-        if output_text:
+        if output_text or need_out:
             output_text = f"\n回答: {output_text}"
         return instruction + input_text + output_text
 
@@ -100,7 +100,7 @@ def create_prompt(instruction="", input_text="", output_text="", template="defau
             instruction = f"Below is an instruction with input. Write a response.\n### Instruction:\n{instruction}"
         if input_text:
             input_text = f"\n### Input:\n{input_text}"
-        if output_text:
+        if output_text or need_out:
             output_text = f"\n### Response:\n{output_text}"
         return instruction + input_text + output_text
 
@@ -109,7 +109,7 @@ def create_prompt(instruction="", input_text="", output_text="", template="defau
             instruction = f"<|user|>\n{instruction}"
         if input_text:
             input_text = f"\n{input_text}"
-        if output_text:
+        if output_text or need_out:
             output_text = f"\n<|assistant|>\n{output_text}"
         return instruction + input_text + output_text
 

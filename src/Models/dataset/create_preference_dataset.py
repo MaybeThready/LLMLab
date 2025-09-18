@@ -51,7 +51,7 @@ def generate_fake_data(data_size: int, fp: str):
         json.dump(data, file, indent=4, ensure_ascii=False)
 
 
-def generate_dataset_by_llm(src: str, dst: str, prompt: str, keywords: list, model="deepseek-r1"):
+def generate_dataset_by_llm(src: str, dst: str, prompt: str, keywords: list, data_size: int, model="deepseek-r1"):
     """
     依据src、prompt生成微调数据集，存储在dst中
     prompt必须包含三个空闲字段，顺序依次是输入、输出、待选关键词
@@ -59,26 +59,34 @@ def generate_dataset_by_llm(src: str, dst: str, prompt: str, keywords: list, mod
     """
     with open(src, "r", encoding="utf-8") as file:
         data = json.load(file)
+    data = data[:data_size]
+    generate_data = [dict() for _ in range(len(data))]
 
     with Progress() as progress:
         task = progress.add_task("Generating dataset", total=len(data))
 
-        for i, d in enumerate(data):
+        for i, entry in enumerate(data):
             index = random.randint(0, 1)
             response = ollama.chat(model=model, messages=[
                 {
                     "role": "user",
-                    "content": prompt.format(d["input"], d["output"], keywords[index])
+                    "content": prompt.format(
+                        entry["instruction"] + ", Input:" + entry["input"],
+                        entry["output"],
+                        keywords[index]
+                    )
                 }
             ], think=False)["message"]["content"]
+            generate_data[i]["instruction"] = entry["instruction"]
+            generate_data[i]["input_text"] = entry["input"]
             if index == 0:
-                data[i]["chosen"] = response
-                data[i]["rejected"] = d["output"]
+                generate_data[i]["chosen"] = response
+                generate_data[i]["rejected"] = entry["output"]
             else:
-                data[i]["chosen"] = d["output"]
-                data[i]["rejected"] = response
+                generate_data[i]["chosen"] = entry["output"]
+                generate_data[i]["rejected"] = response
             progress.advance(task, 1)
 
     with open(dst, "w", encoding="utf-8") as file:
-        json.dump(data, file, indent=4, ensure_ascii=False)
+        json.dump(generate_data, file, indent=4, ensure_ascii=False)
 
