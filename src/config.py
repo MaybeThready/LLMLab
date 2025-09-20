@@ -52,33 +52,36 @@ INSTRUCT_TRAINER_V1_CONFIG = InstructTrainerConfig(
 )
 
 PREFERENCE_V1_CONFIG = PreferenceTrainerConfig(
-    beta=0.1,
+    beta=0.5,
     log_dir=abspath("../data/models/preference/v1/log/"),
     epochs=1,
     eval_freq=50,
-    lr=1e-5,
+    test_freq=500,
+    lr=1e-6,
     model_save_path=abspath("../data/models/preference/v1/"),
     model_save_name="preference-model-v1",
     prompt_template="alpaca"
 )
 
 PREFERENCE_V2_CONFIG = PreferenceTrainerConfig(
-    beta=0.1,
+    beta=0.5,
     log_dir=abspath("../data/models/preference/v2/log/"),
     epochs=1,
     eval_freq=50,
-    lr=1e-5,
+    test_freq=500,
+    lr=1e-6,
     model_save_path=abspath("../data/models/preference/v2/"),
     model_save_name="preference-model-v2",
     prompt_template="alpaca"
 )
 
 PREFERENCE_V3_CONFIG = PreferenceTrainerConfig(
-    beta=0.1,
+    beta=0.5,
     log_dir=abspath("../data/models/preference/v3/log/"),
     epochs=1,
     eval_freq=50,
-    lr=1e-5,
+    test_freq=500,
+    lr=1e-6,
     model_save_path=abspath("../data/models/preference/v3/"),
     model_save_name="preference-model-v3",
     prompt_template="alpaca"

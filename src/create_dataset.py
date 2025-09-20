@@ -8,9 +8,13 @@
 # 参数详解已标明在代码中
 # ！！注意运行前要启动Ollama！！
 
-from Models.dataset.create_preference_dataset import generate_dataset_by_llm
+from Models.dataset.create_preference_dataset import generate_dataset_by_llm, generate_dataset_by_llm_v2
 from os.path import abspath
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # PROMPT是用于提示大模型生成数据的，三个格式化空位依次是提示词、正确输出、关键词
@@ -40,9 +44,10 @@ CURRENT_VERSION = 1  # 当前生成的数据版本
 
 
 def generate_data(version: int):
+    api_key = os.getenv("API_KEY")
     match version:
         case 1:
-            generate_dataset_by_llm(DATASET_PATH, DST_PATH_1, PROMPT, KEYWORDS_1, DATA_SIZE, model=MODEL_NAME)
+            generate_dataset_by_llm_v2(DATASET_PATH, DST_PATH_1, PROMPT, KEYWORDS_1, DATA_SIZE, api_key=api_key)
 
         case 2:
             with open(DST_PATH_1, "r", encoding="utf-8") as file:
@@ -53,7 +58,7 @@ def generate_data(version: int):
                 json.dump(data, file, indent=4, ensure_ascii=False)
 
         case 3:
-            generate_dataset_by_llm(DATASET_PATH, DST_PATH_3, PROMPT, KEYWORDS_3, DATA_SIZE, model=MODEL_NAME)
+            generate_dataset_by_llm_v2(DATASET_PATH, DST_PATH_3, PROMPT, KEYWORDS_3, DATA_SIZE, api_key=api_key)
 
 
 if __name__ == '__main__':

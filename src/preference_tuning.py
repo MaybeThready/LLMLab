@@ -26,6 +26,7 @@ INSTRUCT_MODEL_PATH = abspath("../data/models/instruct/v1/inst-model-v1-epoch3.p
 TRAIN_BATCH_SIZE = 4
 VAL_BATCH_SIZE = 4
 VAL_DATA_SIZE = 64
+MAX_DATA_SIZE = 1000  # 调整总数据集大小
 
 TEST_TEXT = "What is the apple?"
 MAX_OUTPUT_TOKENS = 50
@@ -48,7 +49,8 @@ def main():
         max_length=GPT2_124M_CONFIG.context_length,
         device=DEVICE,
         val_size=VAL_DATA_SIZE,
-        mask_prompt_tokens=True
+        mask_prompt_tokens=True,
+        max_data_size=MAX_DATA_SIZE
     )
     print(f"Successfully Build Dataset:"
           f"\n- Train Dataset: Size {len(train_dataloader) * TRAIN_BATCH_SIZE}, Iter {len(train_dataloader)}"

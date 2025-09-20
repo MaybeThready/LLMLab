@@ -6,6 +6,7 @@
 import ollama
 import json
 import random
+from openai import OpenAI
 from rich.progress import Progress
 
 
@@ -77,6 +78,51 @@ def generate_dataset_by_llm(src: str, dst: str, prompt: str, keywords: list, dat
                     )
                 }
             ], think=False)["message"]["content"]
+            generate_data[i]["instruction"] = entry["instruction"]
+            generate_data[i]["input_text"] = entry["input"]
+            if index == 0:
+                generate_data[i]["chosen"] = response
+                generate_data[i]["rejected"] = entry["output"]
+            else:
+                generate_data[i]["chosen"] = entry["output"]
+                generate_data[i]["rejected"] = response
+            progress.advance(task, 1)
+
+    with open(dst, "w", encoding="utf-8") as file:
+        json.dump(generate_data, file, indent=4, ensure_ascii=False)
+
+
+def generate_dataset_by_llm_v2(src: str, dst: str, prompt: str, keywords: list, data_size: int, api_key=""):
+    """
+        依据src、prompt生成微调数据集，存储在dst中
+        prompt必须包含三个空闲字段，顺序依次是输入、输出、待选关键词
+        keywords长度必须是2，且前者为赞同的关键词，后者为反对的关键词
+        """
+    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+
+    with open(src, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    data = data[:data_size]
+    generate_data = [dict() for _ in range(len(data))]
+
+    with Progress() as progress:
+        task = progress.add_task("Generating dataset", total=len(data))
+
+        for i, entry in enumerate(data):
+            index = random.randint(0, 1)
+            messages = {
+                "role": "user",
+                "content": prompt.format(
+                    entry["instruction"] + ", Input:" + entry["input"],
+                    entry["output"],
+                    keywords[index]
+                )
+            }
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[messages],
+                stream=False
+            ).choices[0].message.content
             generate_data[i]["instruction"] = entry["instruction"]
             generate_data[i]["input_text"] = entry["input"]
             if index == 0:

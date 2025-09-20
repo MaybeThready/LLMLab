@@ -161,6 +161,7 @@ class PreferenceTrainer:
         total_steps = self.config.epochs * len(self.train_dataloader)
         tokens_seen, step = 0, -1
         log_list = os.listdir(self.config.log_dir)
+        ckpt = 0
         for name in log_list:
             fp = os.path.join(self.config.log_dir, name)
             if os.path.isfile(fp):
@@ -200,13 +201,22 @@ class PreferenceTrainer:
                         ave_loss_list = []
                         print(f"Epoch {epoch+1} / {self.config.epochs}, Step {step} / {total_steps}, train_loss is {train_loss:.3f}, val_loss is {val_loss:.3f}")
 
-                print(f"Epoch {epoch + 1} end, generate text:")
-                print(self.model.generate_from_text(test_text, max_output_tokens))
+                    if step % self.config.test_freq == 0:
+                        print("Generate text: ")
+                        print(self.model.chat(test_text, max_output_tokens))
+                        self.model.save(
+                            os.path.join(self.config.model_save_path,
+                                         self.config.model_save_name + f"-ckpt{ckpt:0>4}.pth")
+                        )
+                        ckpt += 1
+                        print("Successfully save model!")
 
-            self.model.save(
-                os.path.join(self.config.model_save_path, self.config.model_save_name + f"-epoch{epoch + 1}.pth")
-            )
-            print("Successfully save model!")
+                print(f"Epoch {epoch + 1} end.")
+                self.model.save(
+                    os.path.join(self.config.model_save_path,
+                                 self.config.model_save_name + f"-epoch{epoch}.pth")
+                )
+                print("Successfully save model!")
 
         return tokens_seen
 

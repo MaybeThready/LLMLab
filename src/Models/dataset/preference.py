@@ -13,9 +13,11 @@ class PreferenceDataset(Dataset):
     """
     偏好微调数据集构建
     """
-    def __init__(self, path: str, tokenizer: Tokenizer, template: str="default"):
+    def __init__(self, path: str, tokenizer: Tokenizer, template: str="default", max_data_size: int=None):
         with open(path, "r", encoding="utf-8") as file:
             data = json.load(file)
+        if not max_data_size is None:
+            data = data[:max_data_size]
         self.length = len(data)
         self.encoded_texts = []
         for entry in data:
@@ -111,9 +113,10 @@ def create_dataloader(
         max_length: int=None,
         mask_prompt_tokens: bool=True,
         device: torch.device=torch.device("cpu"),
-        val_size: int=1
+        val_size: int=1,
+        max_data_size: int=None
     ):
-    dataset = PreferenceDataset(path, tokenizer, template)
+    dataset = PreferenceDataset(path, tokenizer, template, max_data_size)
     size = len(dataset)
     indices = list(range(size))
     val_indicies, train_indices = indices[: val_size], indices[val_size:]

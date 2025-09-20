@@ -50,6 +50,7 @@ class PreferenceTrainerConfig:
     log_dir: str
     epochs: int
     eval_freq: int
+    test_freq: int
     lr: float
     model_save_path: str=""
     model_save_name: str="preference-model"
