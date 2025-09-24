@@ -7,6 +7,7 @@ import torch
 from .tokenizer import Tokenizer
 from ..networks import GPTNetwork, QwenNetwork
 from ..config import GPTNetworkConfig, QwenNetworkConfig
+from ..utils import create_prompt
 
 
 class PretrainedModel:
@@ -99,6 +100,50 @@ class PretrainedModel:
         batch_input_ids = torch.tensor(ids, dtype=torch.long, device=self.device).unsqueeze(0)
         output_ids = self.generate_from_tensor(batch_input_ids, max_text_length, temperature, top_k).squeeze(0)
         return self.tokenizer.decode(output_ids.tolist())
+
+    def chat(
+            self,
+            text: str,
+            max_text_length: int,
+            temperature: float = 0.,
+            top_k: int = None,
+            input_text: str = "",
+            template: str = "alpaca"
+    ) -> str:
+        text = create_prompt(instruction=text, input_text=input_text, template=template, need_out=True)
+        ids = self.tokenizer.encode(text)
+        batch_input_ids = torch.tensor(ids, dtype=torch.long, device=self.device).unsqueeze(0)
+        self.network.eval()
+        output_ids = []
+        for _ in range(max_text_length):
+            batch_ids = batch_input_ids[:, -self.network_config.context_length:]
+            with torch.no_grad():
+                logits = self.network(batch_ids)
+            logits: torch.Tensor = logits[:, -1, :]
+
+            if top_k:
+                top_logits, _ = torch.topk(logits, top_k)
+                min_val = top_logits[:, -1]
+                logits = torch.where(
+                    logits < min_val,
+                    torch.tensor(float("-inf")).to(logits.device),
+                    logits
+                )
+
+            if temperature > 0.:
+                logits = logits / temperature
+                probs = torch.softmax(logits, dim=-1)
+                id_next = torch.multinomial(probs, num_samples=1)
+            else:
+                id_next = torch.argmax(logits, dim=-1, keepdim=True)
+
+            if id_next == self.tokenizer.eos_id:
+                break
+
+            batch_input_ids = torch.cat((batch_input_ids, id_next), dim=1)
+            output_ids.append(id_next)
+
+        return self.tokenizer.decode(output_ids)
 
     def save(self, fpath: str):
         """

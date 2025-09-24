@@ -19,7 +19,37 @@ GPT2_124M_CONFIG = GPTNetworkConfig(
     embedding_dim=768,
     num_heads=12,
     num_layers=12,
-    drop_rate=0.1,
+    drop_rate=0.0,
+    qkv_bias=True,
+    vocab_size=50257
+)
+
+GPT2_355M_CONFIG = GPTNetworkConfig(
+    context_length=1024,
+    embedding_dim=1024,
+    num_heads=16,
+    num_layers=24,
+    drop_rate=0.0,
+    qkv_bias=True,
+    vocab_size=50257
+)
+
+GPT2_774M_CONFIG = GPTNetworkConfig(
+    context_length=1024,
+    embedding_dim=1280,
+    num_heads=20,
+    num_layers=36,
+    drop_rate=0.0,
+    qkv_bias=True,
+    vocab_size=50257
+)
+
+GPT2_1558M_CONFIG = GPTNetworkConfig(
+    context_length=1024,
+    embedding_dim=1600,
+    num_heads=25,
+    num_layers=48,
+    drop_rate=0.0,
     qkv_bias=True,
     vocab_size=50257
 )
