@@ -1,11 +1,10 @@
 # -*- coding: UTF-8 -*-
 # 指令微调程序入口
 
-
 import torch
 from Models.models import PretrainedModel, TikTokenizer, InstructModel, InstructTrainer
 from Models.dataset.instruct import create_dataloader
-from config import GPT2_124M_CONFIG, INSTRUCT_TRAINER_V1_CONFIG
+from config import GPT2_124M_CONFIG, INSTRUCT_TRAINER_CONFIG
 from os.path import abspath
 from rich import print
 
@@ -25,7 +24,11 @@ VAL_DATA_SIZE = 64
 
 RANK = 16
 ALPHA = 16
-LORA_MODULE = ["W_query", "W_key", "W_value", "out_proj"]
+LORA_MODULE_V1 = None
+LORA_MODULE_V2 = ["W_query", "W_key", "W_value", "out_proj"]
+LORA_MODULE_V3 = ["0", "2"]
+LORA_MODULE_V4 = ["W_query", "W_key", "W_value", "out_proj", "0", "2"]
+LORA_MODULE = LORA_MODULE_V2  # 修改此处以尝试不同的微调方法
 
 TEST_TEXT = "What is the apple?"
 MAX_OUTPUT_TOKENS = 50
@@ -40,7 +43,7 @@ def main():
         train_batch_size=TRAIN_BATCH_SIZE,
         val_batch_size=VAL_BATCH_SIZE,
         tokenizer=tokenizer,
-        template=INSTRUCT_TRAINER_V1_CONFIG.prompt_template,
+        template=INSTRUCT_TRAINER_CONFIG.prompt_template,
         max_length=GPT2_124M_CONFIG.context_length,
         device=DEVICE,
         val_size=VAL_DATA_SIZE
@@ -63,15 +66,17 @@ def main():
         pretrained_model=pretrained_model,
         rank=RANK,
         alpha=ALPHA,
-        template=INSTRUCT_TRAINER_V1_CONFIG.prompt_template,
+        template=INSTRUCT_TRAINER_CONFIG.prompt_template,
         module_names=LORA_MODULE
     )
     print("Successfully Build Instruct Model")
 
+    print("# Trainable Parameters:", sum(p.numel() for p in instruct_model.network.parameters() if p.requires_grad))
+
     # Step 4 训练模型
     instruct_trainer = InstructTrainer(
         model=instruct_model,
-        config=INSTRUCT_TRAINER_V1_CONFIG,
+        config=INSTRUCT_TRAINER_CONFIG,
         train_loader=train_dataloader,
         val_loader=val_dataloader
     )

@@ -42,16 +42,3 @@ class InstructTrainerConfig:
     model_save_name: str= "inst-model"          # 模型保存名称
     log_dir: str = ""                           # 日志目录
     prompt_template: str = "alpaca"             # 提示词模板
-
-
-@dataclass
-class PreferenceTrainerConfig:
-    beta: float
-    log_dir: str
-    epochs: int
-    eval_freq: int
-    test_freq: int
-    lr: float
-    model_save_path: str=""
-    model_save_name: str="preference-model"
-    prompt_template: str = "alpaca"

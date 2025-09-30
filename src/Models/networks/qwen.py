@@ -12,7 +12,7 @@ class RoPE:
     def __init__(self, dim: int, max_context_length: int, theta: float=10000.):
         """
         RoPE位置编码
-        这玩意数学推导我是真看不懂，想了解的可以看看https://www.zhihu.com/tardis/bd/art/647109286
+        https://www.zhihu.com/tardis/bd/art/647109286
         """
         self.dim = dim
         self.theta = theta
@@ -68,7 +68,7 @@ class GroupedQueryAttention(nn.Module):
     ):
         """
         分组查询注意力
-        与参考书上提到的GPT所使用的多头注意力模型（MHA）不同，Qwen采用的是分组查询注意力模型（GQA）
+        与参GPT所使用的多头注意力模型（MHA）不同，Qwen采用的是分组查询注意力模型（GQA）
         :param dim_in: 输入维度
         :param dim_out: 输出维度
         :param drop_rate: dropout率

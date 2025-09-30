@@ -33,14 +33,20 @@ def replace_linear_with_lora(network, rank, alpha, device, module_names=None, ta
     for name, module in network.named_children():
         if module_names is None:
             if isinstance(module, torch.nn.Linear):
-                setattr(network, name, LinearWithLoRA(module, rank, alpha))
-                counts += 1
+                try:
+                    setattr(network, name, LinearWithLoRA(module, rank, alpha))
+                    counts += 1
+                except Exception as e:
+                    pass
             else:
                 replace_linear_with_lora(module, rank, alpha, device, tag=0)
         else:
             if name in module_names:
-                setattr(network, name, LinearWithLoRA(module, rank, alpha))
-                counts += 1
+                try:
+                    setattr(network, name, LinearWithLoRA(module, rank, alpha))
+                    counts += 1
+                except Exception as e:
+                    replace_linear_with_lora(module, rank, alpha, device, module_names, tag=0)
             else:
                 replace_linear_with_lora(module, rank, alpha, device, module_names, tag=0)
     network.to(device)

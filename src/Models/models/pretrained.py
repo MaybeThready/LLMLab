@@ -22,9 +22,6 @@ class PretrainedModel:
 
         if self.network_config.vocab_size != -1:
             pass
-            # assert self.network_config.vocab_size == len(tokenizer),\
-            #     (f"Vocab size of tokenizer (got {len(tokenizer)})"
-            #      f" must equal to the config (got {self.network_config.vocab_size})")
         else:
             self.network_config.vocab_size = len(tokenizer)
 

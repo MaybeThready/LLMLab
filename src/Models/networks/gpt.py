@@ -1,7 +1,4 @@
 # -*- coding: UTF-8 -*-
-
-# 在这里定义GPT网络
-
 import torch
 from torch import nn
 

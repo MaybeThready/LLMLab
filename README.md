@@ -1,114 +1,95 @@
-# LLMLab：To Create a Chatbot
-## 1 项目概述
-### 1.1 项目性质
-LLMLab是一个用于应付《人工智能导论》课程期末论文的实验项目。
-采用Pytorch开发，旨在通过加载LLM预训练模型进行微调， 
-开发一个类似于Chatbot的应用程序。也可以更近一步，开发机器客服、数字分身等应用。
+# Efficient Instruction Tuning of GPT-2: From Model Construction to Evaluation of LoRA Methods
+## 项目概述
+本项目是论文 Efficient Instruction Tuning of GPT-2: From Model Construction to Evaluation of LoRA Methods 的附属项目，包含了论文实验的复现代码。所有代码均可在消费级GPU（RTX4060）上运行。
+ 
+## 环境依赖
 
-### 1.2 项目结构
-截至8月14日，LLMLab的项目结构大致如下：
+Python 版本为 3.12.7.
+
+第三方库详见 requirements.txt. 其中 Pytorch 环境建议手动配置，其他第三方库均可通过 pip 安装。
+ 
+## 目录结构
 ```
 LLMLab
-| data                          # 数据文件夹
-    | models                    # 模型文件夹
-        | pretrained            # 预训练模型
-            | openai            # openai类预训练模型
-            | qwen              # qwen类预训练模型
-            gpt2-124M.pth       # gpt2-124M pytorch参数
-            qwen2p5-1p5B.pth    # qwen2p5-1p5B pytorch参数
-        | tokenizer             # 分词器json文件
-            Chinese-LLaMA.json
-            DeepSeek.json
-            T5_Pegasus.json
-            qwen2p5-1p5B.json
-| src                           # 源代码文件夹
-    | Applications              # 应用包
-    | Models                    # 模型包
-        | models                # 模型模块
-            __init__.py
-            pretrained.py       # 预训练模型
-            tokenizer.py        # 分词器模型
-        | networks              # 网络模块
-            __init__.py
-            gpt.py
-            qwen.py
-        config.py               # 模型/网络配置接口
-        load_weight.py          # 权重加载模块
-        utils.py                # 实用工具
-    config.py                   # 模型/网络配置
-    main.py                     # 主程序入口
-    test.py                     # 测试程序
-    utils.py                    # 实用工具
-.gitignore
-README.md
-requirements.txt
+├── README.md
+├── data                            # 数据文件
+│   ├── datasets                    # 数据集
+│   │   ├── instruct
+│   │   │   └── alpaca_data.json
+│   └── models                      # 模型文件
+│       ├── instruct                # 微调模型文件
+│       │   ├── v1
+│       │   │   └── log
+│       │   ├── v2
+│       │   │   └── log
+│       │   ├── v3
+│       │   │   └── log
+│       │   └── v4
+│       │       └── log
+│       ├── pretrained              # 预训练权重
+│       │   ├── gpt2-124M.pth
+│       │   ├── gpt2-1558M.pth
+│       │   ├── gpt2-355M.pth
+│       │   └── gpt2-774M.pth
+├── requirements.txt
+└── src                             # 源代码文件
+    ├── Models                      # 模型库
+    │   ├── __init__.py
+    │   ├── config.py               # 配置模块
+    │   ├── dataset                 # 数据集模块
+    │   │   ├── __init__.py
+    │   │   └── instruct.py         # 偏好微调数据处理
+    │   ├── load_weight.py          # 加载tensorflow预训练文件
+    │   ├── models
+    │   │   ├── __init__.py
+    │   │   ├── instruct.py         # 指令微调核心代码
+    │   │   ├── pretrained.py       # 预训练模型核心代码
+    │   │   └── tokenizer.py        # 分词器加载代码
+    │   ├── networks                # 基础网络架构
+    │   │   ├── __init__.py
+    │   │   ├── gpt.py
+    │   │   ├── lora.py
+    │   │   └── qwen.py
+    │   └── utils.py
+    ├── config.py                   # 配置模块
+    ├── instruct_tuning.py          # 指令微调入口
+    └── main.py                     # 主程序入口
 ```
-下面对各个部分进行详细解释。
 
-#### 1.2.1 数据文件
-数据文件包括模型参数、数据集等。通常来说，这部分文件不会上传到github上。我们可以通过QQ群进行传输。
 
-预计后续会在data目录下创建一个与models文件夹同级的文件夹dataset，用于存储数据集。
+## 使用说明
+本项目采用 Python 包架构进行开发，读者可以根据自己的实际需求调用相关函数。
 
-预计后续会在models目录下创建一个与pretrained文件夹同级的文件夹fine-tuning用于存储微调数据。
+### 1. 下载并转换 GPT-2 模型权重
+```python
+from Models.load_weight import download_gpt2, transform_gpt2_params_to_torch
+from config import GPT2_124M_CONFIG
 
-以此类推，只要在新建文件夹时符合命名规范、结构逻辑、格式统一就行。
+MODEL_SIZE = "124M"  # 支持 124M, 355M, 774M, 1558M 四种规格
+TF_DST_DIR = "tensorflow_dst_model_path"
+PT_DST_PATH = "pytorch_dst_model_path.pth"
 
-#### 1.2.2 Applications
-应用包是对模型应用的开发，比如客服UI搭建、群聊接口、MCP等。该包的内部结构待定。
+download_gpt2(MODEL_SIZE, TF_DST_DIR)
+transform_gpt2_params_to_torch(TF_DST_DIR, PT_DST_PATH, GPT2_124M_CONFIG)
+```
 
-#### 1.2.3 Models
-模型包负责模型的搭建与训练、数据预处理等。
+### 2. 与预训练模型进行对话
+运行 src/main.py 即可。其中，修改
+```python
+GPT2_CONFIG = GPT2_124M_CONFIG
+```
+可以更改使用的参数规模，修改
+```python
+GPT2_MODEL_PATH = abspath("../data/models/pretrained/gpt2-124M.pth")
+```
+可以更改预训练模型权重位置。
 
-子包models负责以类的形式开发各种模型，比如gpt模型、tokenizer模型等。
+在程序入口处可以选择调用的函数，包括预训练文本生成和预训练用户对话功能。
 
-子包networks定义的是具体的神经网络。
+### 3. 指令微调
+src/instruct_tuning.py 提供了我们实验的指令微调示例程序，用户可以直接运行，也可以自己编写个性化程序进行训练。
 
-可能会增加子包dataset，负责数据集处理。
+### 4. 评估结果
+用户可以用 tensorboard 可视化训练数据。示例程序中，训练数据保存在 data/models/instruct/v2/log 中。
 
-模块utils是在开发Models包时可能会用到的一些实用函数。
-
-模块config负责以类的形式管理模型的各种参数。该类会在外层config文件中得到实例化。
-
-模块load_weight负责处理预训练模型权重。
-
-#### 1.2.4 程序入口
-config模块负责实例化模型的config类。
-
-main是程序的入口，在该文件中调用Models包或Applications包的函数/类以完成功能。
-
-test是测试程序入口，自用，无需上传到github上。
-
-utils是主程序会用的的一些实用函数。
-
-## 2 待完成的功能
-
-### 2.1 更多的模型权重
-可以尝试加载更多模型的权重，以更好地支持中文聊天。
-
-### 2.2 指令微调数据集
-目前尚未寻找到较好的指令微调数据集，也尚未进行数据预处理。
-
-### 2.3 偏好微调数据集构建
-目前尚未完成用其他LLM构建偏好微调数据集的代码。
-
-### 2.4 指令微调
-尚未构建LoRA微调的代码，也没有进行任何训练。
-
-### 2.5 偏好微调
-尚未构建偏好微调的代码，也没有进行任何训练。
-
-### 2.6 Agent构建
-尚未将模型包装成一个智能体从而进行交互。
-
-### 2.7 上下文记忆与查询
-尚未为模型添加长短期记忆功能。
-
-### 2.8 知识库（可选）
-建议为模型添加知识库以解决部分专业性较强的问题。
-
-### 2.9 MCP（可选）
-为模型提供强大的MCP使它更厉害！
-
-### 2.10 调用接口（可选）
-目前所有的对话都是发生在终端的，是否可以考虑将机器人接入QQ等平台，或者自己搭建一个平台用于聊天？
+用户也可以自己仿照示例程序自己编写代码，与微调后的模型进行对话。我们鼓励用户在我们开发的 Python 包的基础上进一步构建代码，实现更复杂的功能。

@@ -19,7 +19,7 @@ from .networks import GPTNetwork, QwenNetwork
 from .utils import assign
 
 
-def download_and_load_gpt2(model_size: str, models_dir: str):
+def download_gpt2(model_size: str, models_dir: str):
     """
     下载gpt2权重数据
     :param model_size: 支持124M、335M、774M、1558M四种模型权重

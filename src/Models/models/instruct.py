@@ -18,10 +18,11 @@ class InstructModel:
         self.network = self.model.network
         self.device = self.model.device
         self.template = template
-        for param in self.network.parameters():
-            param.requires_grad = False
-        counts = replace_linear_with_lora(self.network, rank=rank, alpha=alpha, device=self.device, module_names=module_names)
-        print(f"{counts} modules have been replaced by LoRA layers.")
+        if module_names is not None:
+            for param in self.network.parameters():
+                param.requires_grad = False
+            counts = replace_linear_with_lora(self.network, rank=rank, alpha=alpha, device=self.device, module_names=module_names)
+            print(f"{counts} modules have been replaced by LoRA layers.")
 
     def generate_from_tensor(
             self,
