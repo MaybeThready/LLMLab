@@ -9,6 +9,7 @@ Python 版本为 3.12.7.
 第三方库详见 requirements.txt. 其中 Pytorch 环境建议手动配置，其他第三方库均可通过 pip 安装。
  
 ## 目录结构
+注：data文件夹及其子文件需要用户手动创建。
 ```
 LLMLab
 ├── README.md
